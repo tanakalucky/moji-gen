@@ -1,101 +1,51 @@
-import { useState } from "react";
-import viteLogo from "/vite.svg";
-import cloudflareLogo from "@/shared/assets/Cloudflare_Logo.svg";
-import honoLogo from "@/shared/assets/hono.svg";
-import reactLogo from "@/shared/assets/react.svg";
+import { useCallback } from "react";
+import type { HistoryEntry } from "@/entities/generation";
+import { useGenerateString } from "@/features/generate-string";
+import { useGenerationHistory } from "@/features/generation-history";
+import { GeneratorPanel } from "@/widgets/generator-panel";
+import { HistoryPanel } from "@/widgets/history-panel";
 
 export function HomePage() {
-  const [count, setCount] = useState(0);
-  const [name, setName] = useState("unknown");
+  const { config, results, generate, updateConfig, applyConfig } = useGenerateString();
+  const { history, addEntry, removeEntry, clearHistory } = useGenerationHistory();
+
+  const handleGenerate = useCallback(() => {
+    const newResults = generate();
+    addEntry(config, newResults);
+  }, [generate, addEntry, config]);
+
+  const handleReuse = useCallback(
+    (entry: HistoryEntry) => {
+      applyConfig(entry.config);
+    },
+    [applyConfig],
+  );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
-      {/* Logo section */}
-      <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 mb-8">
-        <a
-          href="https://vite.dev"
-          target="_blank"
-          rel="noreferrer"
-          className="transition-all duration-300 hover:drop-shadow-[0_0_2em_rgba(100,108,255,0.67)]"
-        >
-          <img src={viteLogo} className="h-16 md:h-24 p-4 md:p-6" alt="Vite logo" />
-        </a>
-        <a
-          href="https://react.dev"
-          target="_blank"
-          rel="noreferrer"
-          className="transition-all duration-300 hover:drop-shadow-[0_0_2em_rgba(97,218,251,0.67)] motion-safe:animate-spin motion-safe:[animation-duration:20s]"
-        >
-          <img src={reactLogo} className="h-16 md:h-24 p-4 md:p-6" alt="React logo" />
-        </a>
-        <a
-          href="https://hono.dev/"
-          target="_blank"
-          rel="noreferrer"
-          className="transition-all duration-300 hover:drop-shadow-[0_0_2em_rgba(246,130,31,0.67)]"
-        >
-          <img src={honoLogo} className="h-16 md:h-24 p-4 md:p-6" alt="Hono logo" />
-        </a>
-        <a
-          href="https://workers.cloudflare.com/"
-          target="_blank"
-          rel="noreferrer"
-          className="transition-all duration-300 hover:drop-shadow-[0_0_2em_rgba(246,130,31,0.67)]"
-        >
-          <img src={cloudflareLogo} className="h-16 md:h-24 p-4 md:p-6" alt="Cloudflare logo" />
-        </a>
+    <div className="mx-auto min-h-screen max-w-6xl px-4 py-8">
+      <header className="mb-8 text-center">
+        <h1 className="text-3xl font-bold tracking-tight">Moji-Gen</h1>
+        <p className="mt-1 text-muted-foreground">指定文字数の文字列ジェネレーター</p>
+      </header>
+
+      <div className="flex gap-6">
+        <div className="w-1/2">
+          <GeneratorPanel
+            config={config}
+            results={results}
+            onUpdateConfig={updateConfig}
+            onGenerate={handleGenerate}
+          />
+        </div>
+        <div className="w-1/2">
+          <HistoryPanel
+            history={history}
+            onReuse={handleReuse}
+            onRemove={removeEntry}
+            onClear={clearHistory}
+          />
+        </div>
       </div>
-
-      {/* Title */}
-      <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-center">
-        Vite + React + Hono + Cloudflare
-      </h1>
-
-      {/* Counter card */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 md:p-8 mb-4 max-w-2xl w-full shadow-lg">
-        <button
-          type="button"
-          onClick={() => setCount((count) => count + 1)}
-          aria-label="increment"
-          className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg mb-4"
-        >
-          count is {count}
-        </button>
-        <p className="text-gray-300 text-sm md:text-base">
-          Edit{" "}
-          <code className="bg-gray-700/70 px-2 py-1 rounded text-indigo-300 font-mono text-sm">
-            pages/home/ui/HomePage.tsx
-          </code>{" "}
-          and save to test HMR
-        </p>
-      </div>
-
-      {/* API card */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 md:p-8 mb-8 max-w-2xl w-full shadow-lg">
-        <button
-          type="button"
-          onClick={() => {
-            fetch("/api/")
-              .then((res) => res.json() as Promise<{ name: string }>)
-              .then((data) => setName(data.name))
-              .catch((error) => console.error(error));
-          }}
-          aria-label="get name"
-          className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg mb-4"
-        >
-          Name from API is: {name}
-        </button>
-        <p className="text-gray-300 text-sm md:text-base">
-          Edit{" "}
-          <code className="bg-gray-700/70 px-2 py-1 rounded text-indigo-300 font-mono text-sm">
-            worker/index.ts
-          </code>{" "}
-          to change the name
-        </p>
-      </div>
-
-      {/* Footer */}
-      <p className="text-gray-500 text-sm text-center">Click on the logos to learn more</p>
     </div>
   );
 }
