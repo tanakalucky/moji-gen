@@ -8,7 +8,6 @@ import {
   CardAction,
 } from "@/shared/ui/Card";
 import { Button } from "@/shared/ui/Button";
-import { ScrollArea } from "@/shared/ui/ScrollArea";
 import { Trash2 } from "lucide-react";
 import { HistoryList } from "@/features/generation-history";
 
